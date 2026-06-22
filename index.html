@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แดชบอร์ดสถิติออเดอร์</title>
+  <meta name="description" content="ระบบแดชบอร์ดสำหรับนักบริหารดูสถิติและจัดการออเดอร์" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ─────────── TOP HEADER ─────────── -->
+<header class="app-header">
+  <div class="header-left">
+    <span class="header-icon">📋</span>
+    <div>
+      <div class="header-title">แดชบอร์ดสถิติออเดอร์</div>
+      <div class="header-sub">ข้อมูลอัปเดตอัตโนมัติ • <span id="lastUpdated">กำลังโหลด...</span></div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="conn-badge" id="connBadge"><span class="conn-dot"></span><span>เชื่อมต่อแล้ว</span></div>
+    <button class="btn btn-primary" id="btnRefresh">🔄 รีเฟรช</button>
+    <button class="btn btn-secondary" id="btnExport">📥 Export CSV</button>
+    <button class="btn btn-add" id="btnAdd">+ เพิ่มออเดอร์</button>
+  </div>
+</header>
+
+<!-- ─────────── FILTER PANEL ─────────── -->
+<div class="filter-panel">
+  <div class="filter-row">
+    <div class="fg">
+      <label>แพลตฟอร์ม</label>
+      <select id="fPlatform"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>สถานะ</label>
+      <select id="fStatus"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>ชื่อสินค้า</label>
+      <select id="fProduct"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>ลาย</label>
+      <select id="fPattern"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>มุ้ง</label>
+      <select id="fMesh"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>แสดงช่วงเวลา</label>
+      <select id="fPeriodType">
+        <option value="month">รายเดือน</option>
+        <option value="day">รายวัน</option>
+        <option value="year">รายปี</option>
+        <option value="all">ทั้งหมด</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>เดือน</label>
+      <select id="fMonth">
+        <option value="">ทั้งหมด</option>
+        <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option>
+        <option value="3">มีนาคม</option><option value="4">เมษายน</option>
+        <option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+        <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option>
+        <option value="9">กันยายน</option><option value="10">ตุลาคม</option>
+        <option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>ปี</label>
+      <select id="fYear"><option value="">ทั้งหมด</option></select>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="fg">
+      <label>สีอลูมิเนียม</label>
+      <select id="fAlumColor"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>สีกระจก</label>
+      <select id="fGlassColor"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>ขนาด</label>
+      <select id="fSize"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>มุ้งชนิด</label>
+      <select id="fMeshType"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg">
+      <label>ช่อง</label>
+      <select id="fChannel"><option value="">ทั้งหมด</option></select>
+    </div>
+    <div class="fg fg-wide">
+      <label>ค้นหา</label>
+      <input type="text" id="fSearch" placeholder="พิมพ์เพื่อค้นหา..." />
+    </div>
+    <div class="fg fg-check">
+      <label>&nbsp;</label>
+      <label class="check-label">
+        <input type="checkbox" id="fOnlySelected" />
+        มีเฉพาะข้อมูลที่กรองแล้ว
+      </label>
+    </div>
+    <div class="fg fg-actions">
+      <label>&nbsp;</label>
+      <div class="action-btns">
+        <button class="btn btn-filter" id="btnFilter">🔍 กรอง</button>
+        <button class="btn btn-clear" id="btnClear">✕ ล้าง</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── KPI CARDS ─────────── -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-label">รายการที่กรอง</div>
+    <div class="kpi-val" id="kpiFiltered">0</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">รายการทั้งหมด</div>
+    <div class="kpi-val" id="kpiTotal">0</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">จำนวน (ชิ้น)</div>
+    <div class="kpi-val" id="kpiQty">0</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">สำเร็จแล้ว</div>
+    <div class="kpi-val kpi-green" id="kpiDone">0</div>
+  </div>
+  <div class="kpi-card kpi-wide">
+    <div class="kpi-label">สินค้าที่ขายมากสุด</div>
+    <div class="kpi-val kpi-accent" id="kpiTopProduct">—</div>
+  </div>
+  <div class="kpi-card kpi-wide">
+    <div class="kpi-label">แพลตฟอร์มยอดนิยม</div>
+    <div class="kpi-val kpi-accent" id="kpiTopPlatform">—</div>
+  </div>
+</div>
+
+<!-- ─────────── CHARTS ROW ─────────── -->
+<div class="charts-row">
+  <div class="chart-box">
+    <div class="box-header">
+      <span class="box-title">ยอดขายรายเดือน</span>
+      <div id="monthChartInfo" class="chart-info"></div>
+    </div>
+    <div class="chart-wrap"><canvas id="chartMonth"></canvas></div>
+  </div>
+  <div class="chart-box">
+    <div class="box-header">
+      <span class="box-title">ยอดขายรายวันล่าสุด</span>
+      <div id="dayChartInfo" class="chart-info"></div>
+    </div>
+    <div class="chart-wrap"><canvas id="chartDay"></canvas></div>
+  </div>
+</div>
+
+<!-- ─────────── SUMMARY TABLES ROW 1 ─────────── -->
+<div class="tables-row row-3">
+  <!-- สรุปสีอลูมิเนียม -->
+  <div class="table-box">
+    <div class="box-header accent-alum"><span class="box-title">สรุปสีอลูมิเนียม</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>สีอลูมิเนียม</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbAlum"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- สรุปสีกระจก -->
+  <div class="table-box">
+    <div class="box-header accent-glass"><span class="box-title">สรุปสีกระจก</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>สีกระจก</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbGlass"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- สรุปแพลตฟอร์ม -->
+  <div class="table-box">
+    <div class="box-header accent-plat"><span class="box-title">สรุปแพลตฟอร์มล่าสุด</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>แพลตฟอร์ม</th><th class="num">จำนวน</th><th class="num">ยอดรวม</th></tr></thead>
+        <tbody id="tbPlatform"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── SUMMARY TABLES ROW 2 ─────────── -->
+<div class="tables-row row-2">
+  <!-- สินค้า + สีอลูมิเนียม -->
+  <div class="table-box">
+    <div class="box-header accent-alum"><span class="box-title">สินค้า + สีอลูมิเนียม</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ชื่อสินค้า</th><th>สีอลูมิเนียม</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbProdAlum"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- สินค้า + สีกระจก -->
+  <div class="table-box">
+    <div class="box-header accent-glass"><span class="box-title">สินค้า + สีกระจก</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ชื่อสินค้า</th><th>สีกระจก</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbProdGlass"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── SUMMARY TABLES ROW 3 ─────────── -->
+<div class="tables-row row-2">
+  <!-- สินค้า + มุ้ง -->
+  <div class="table-box">
+    <div class="box-header accent-mesh"><span class="box-title">สินค้า + มุ้ง</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ชื่อสินค้า</th><th>มุ้ง</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbProdMesh"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- สินค้า + ขนาด -->
+  <div class="table-box">
+    <div class="box-header accent-size"><span class="box-title">สินค้า + ขนาด</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ชื่อสินค้า</th><th>ขนาด</th><th class="num">จำนวน</th></tr></thead>
+        <tbody id="tbProdSize"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── ORDERS DETAIL TABLE ─────────── -->
+<div class="tables-row row-1">
+  <div class="table-box">
+    <div class="box-header accent-detail" style="justify-content:space-between;">
+      <span class="box-title">รายละเอียดออเดอร์</span>
+      <span class="detail-count" id="detailCount"></span>
+    </div>
+    <div class="tbl-wrap tbl-detail">
+      <table id="orderDetailTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>วันที่</th>
+            <th>แพลตฟอร์ม</th>
+            <th>ชื่อสินค้า</th>
+            <th>ขนาด</th>
+            <th>ช่อง</th>
+            <th>สีอลูมิเนียม</th>
+            <th>สีกระจก</th>
+            <th>ลาย</th>
+            <th>มุ้ง</th>
+            <th class="num">จำนวน</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="tbDetail"></tbody>
+      </table>
+    </div>
+    <div class="tbl-pagination" id="detailPagination"></div>
+  </div>
+</div>
+
+<!-- ─────────── MODAL: ADD/EDIT ─────────── -->
+<div class="overlay" id="overlayForm">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modalTitle">เพิ่มออเดอร์ใหม่</h2>
+      <button class="close-btn" id="btnCloseForm">✕</button>
+    </div>
+    <form id="orderForm" class="modal-body">
+      <input type="hidden" id="fId" />
+      <div class="form-grid">
+        <div class="fg2">
+          <label>วันที่ <span class="req">*</span></label>
+          <input type="datetime-local" id="fDate" required />
+        </div>
+        <div class="fg2">
+          <label>แพลตฟอร์ม</label>
+          <input type="text" id="fPlatformIn" list="dPlatform" placeholder="เช่น Lazada, Shopee" />
+          <datalist id="dPlatform"></datalist>
+        </div>
+        <div class="fg2 span2">
+          <label>ชื่อสินค้า</label>
+          <input type="text" id="fProductIn" placeholder="ชื่อสินค้า" />
+        </div>
+        <div class="fg2">
+          <label>ขนาด</label>
+          <input type="text" id="fSizeIn" placeholder="เช่น 100x200" />
+        </div>
+        <div class="fg2">
+          <label>ช่อง</label>
+          <input type="number" id="fChannelIn" step="0.1" min="0" placeholder="0.0" />
+        </div>
+        <div class="fg2">
+          <label>สีอลูมิเนียม</label>
+          <input type="text" id="fAlumIn" placeholder="สีอลูมิเนียม" />
+        </div>
+        <div class="fg2">
+          <label>สีกระจก</label>
+          <input type="text" id="fGlassIn" placeholder="สีกระจก" />
+        </div>
+        <div class="fg2">
+          <label>ลาย</label>
+          <input type="text" id="fPatternIn" placeholder="ลาย" />
+        </div>
+        <div class="fg2">
+          <label>มุ้ง</label>
+          <input type="text" id="fMeshIn" placeholder="มุ้ง" />
+        </div>
+        <div class="fg2">
+          <label>จำนวน</label>
+          <input type="number" id="fQtyIn" min="1" value="1" />
+        </div>
+        <div class="fg2">
+          <label>สถานะ</label>
+          <select id="fStatusIn">
+            <option value="">เลือกสถานะ</option>
+            <option>รับออเดอร์</option>
+            <option>กำลังผลิต</option>
+            <option>รอส่ง</option>
+            <option>จัดส่งแล้ว</option>
+            <option>สำเร็จ</option>
+            <option>ยกเลิก</option>
+          </select>
+        </div>
+      </div>
+    </form>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelForm">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnSaveForm">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── MODAL: DELETE ─────────── -->
+<div class="overlay" id="overlayDelete">
+  <div class="modal modal-sm">
+    <div class="modal-hdr">
+      <h2>ยืนยันการลบ</h2>
+      <button class="close-btn" id="btnCloseDelete">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>คุณต้องการลบออเดอร์ <strong id="deleteLabel"></strong> ใช่หรือไม่?</p>
+      <p class="warn">⚠️ ไม่สามารถย้อนกลับได้</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelDelete">ยกเลิก</button>
+      <button class="btn btn-danger" id="btnConfirmDelete">🗑️ ลบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toasts" id="toasts"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
